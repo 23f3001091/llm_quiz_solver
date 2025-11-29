@@ -2,12 +2,12 @@ import json
 import requests
 
 def test_local_quiz():
-    url = "http://127.0.0.1:8000/quiz"
+    url = "https://llm-quiz-solver-2yti.onrender.com/quiz"
 
     payload = {
         "email": "23f3001091@ds.study.iitm.ac.in",
         "secret": "my7secret",
-        "url": "https://tds-llm-analysis.s-anand.net/demo"
+        "url": "https://tds-llm-analysis.s-anand.net/demo2"
     }
 
     print("\nSending request to local FastAPI server...\n")

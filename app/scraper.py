@@ -2,6 +2,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from playwright.sync_api import sync_playwright
 import re
+from urllib.parse import urlparse, urljoin
 
 class QuizTask:
     def __init__(self, question, submit_url, raw_html):
@@ -11,20 +12,17 @@ class QuizTask:
 
 
 def clean_url(url: str):
-    """Remove HTML garbage from extracted URL."""
     if not url:
         return None
-
-    # Remove HTML tags and broken characters
-    url = url.replace("</span>", "")
-    url = url.replace("</p>", "")
-    url = url.replace("</div>", "")
-    url = url.replace(">", "")
-    url = url.replace("\"", "")
-    url = url.replace("'", "")
-    url = url.strip()
-
-    return url
+    return (
+        url.replace("</span>", "")
+           .replace("</p>", "")
+           .replace("</div>", "")
+           .replace(">", "")
+           .replace("\"", "")
+           .replace("'", "")
+           .strip()
+    )
 
 
 def load_page_sync(url: str):
@@ -37,37 +35,30 @@ def load_page_sync(url: str):
         html = page.content()
         text = page.inner_text("body")
 
-        # ----------------------------------------------
-        # STRONG & CLEAN SUBMIT URL EXTRACTION (3 levels)
-        # ----------------------------------------------
-
-        # ----------------------------------------------
-        # STRONG & CLEAN SUBMIT URL EXTRACTION (supports relative links)
-        # ----------------------------------------------
-
         submit_url = None
+        parsed = urlparse(url)
+        base_origin = f"{parsed.scheme}://{parsed.netloc}"
 
-        # Base domain (for resolving relative URLs)
-        from urllib.parse import urljoin
-
-        base_url = url.split("?")[0]  # strip query
-        base_origin = re.match(r"https?://[^/]+", url).group(0)
-
-        # 1) Look for absolute URLs
+        # ------------------------------------------------------
+        # 1) Look for absolute submit URLs
+        # ------------------------------------------------------
         abs_urls = re.findall(r"https?://[^\s\"'>]+", html)
-
         for u in abs_urls:
             if "submit" in u:
                 submit_url = clean_url(u)
                 break
 
-        # 2) Look for relative URLs like /submit
+        # ------------------------------------------------------
+        # 2) Look for relative URLs such as /submit or /submit?...
+        # ------------------------------------------------------
         if submit_url is None:
-            rel_candidates = re.findall(r"href=['\"](/submit[^'\">]*)['\"]", html)
-            if rel_candidates:
-                submit_url = urljoin(base_origin, rel_candidates[0])
+            rel_urls = re.findall(r"href=['\"](/submit[^'\">]*)['\"]", html)
+            if rel_urls:
+                submit_url = urljoin(base_origin, rel_urls[0])
 
-        # 3) Fallback: URLs inside visible text
+        # ------------------------------------------------------
+        # 3) Fallback: look in visible text
+        # ------------------------------------------------------
         if submit_url is None:
             visible_urls = re.findall(r"https?://[^\s\"'>]+", text)
             for u in visible_urls:
@@ -75,18 +66,15 @@ def load_page_sync(url: str):
                     submit_url = clean_url(u)
                     break
 
-        # Clean again
-        if submit_url:
-            submit_url = clean_url(submit_url)
-
+        # ------------------------------------------------------
+        # 4) FINAL FALLBACK (needed for Demo2)
+        # There is NO submit URL in Demo2, so we infer it.
+        # ------------------------------------------------------
         if submit_url is None:
-            print("\n❌ Could not find submit URL in page\n")
-            print("HTML snippet:")
-            print(html[:1500])
-            raise ValueError("Submit URL not found")
+            submit_url = f"{base_origin}/submit"
+            print("\n⚠️ Fallback: Using inferred submit URL:", submit_url)
 
         browser.close()
-
         return QuizTask(question=text, submit_url=submit_url, raw_html=html)
 
 
