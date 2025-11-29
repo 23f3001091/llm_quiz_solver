@@ -1,0 +1,29 @@
+# Core web framework
+fastapi
+uvicorn
+
+# HTTP requests
+httpx
+
+# Env variables
+python-dotenv
+
+# Validation models
+pydantic
+
+# HTML parsing
+beautifulsoup4
+
+# Browser automation (JS-rendered quizzes)
+playwright
+
+# Data processing (for real quiz tasks)
+pandas
+numpy
+
+# PDFs
+PyPDF2
+
+# Visualization (some tasks require charts)
+matplotlib
+

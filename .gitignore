@@ -1,0 +1,65 @@
+# -----------------------
+# Python
+# -----------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Byte-compiled
+*.py[cod]
+
+# Jupyter (not used, but safe)
+.ipynb_checkpoints/
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# -----------------------
+# Editor / IDE
+# -----------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# -----------------------
+# Environment files
+# -----------------------
+.env
+.env.*
+*.env
+
+# -----------------------
+# Logs
+# -----------------------
+*.log
+logs/
+
+# -----------------------
+# Playwright
+# -----------------------
+# Installed browser binaries (huge files)
+playwright/.local-browsers/
+ # Linux + Mac + Windows chromium caches
+**/chromium-*/ 
+**/webkit-*/ 
+**/firefox-*/  
+
+# Test output
+test-output/
+
+# -----------------------
+# Misc
+# -----------------------
+.DS_Store
+Thumbs.db
